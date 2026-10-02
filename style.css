@@ -227,3 +227,7 @@ button { font: inherit; color: inherit; }
 .rules p, .rules ul { margin: 0; }
 .rules ul { padding-left: 1.2em; }
 .rules form { margin-top: 18px; text-align: center; }
+/* CPU 戦で後手のとき、自分（プレイヤー2）の山を下に */
+.stage.flip #status { order: -2; }
+.stage.flip #row-p1 { order: -1; }
+.stage.flip #row-p2 { order: 1; }

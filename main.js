@@ -85,10 +85,11 @@ function shuffle(arr) {
 /** @type {any} */
 let state;
 
-// CPU 戦ではプレイヤー2 が CPU（準備も CPU がする）
+// CPU 戦: あなたが先手ならプレイヤー1、後手ならプレイヤー2（準備は後手がする）
 let vsCpu = false;
-function name(n) { return vsCpu ? (n === 1 ? 'あなた' : 'CPU') : `プレイヤー${n}`; }
-function cpuTurn() { return vsCpu && state.current === 2 && (state.phase === 'setup-pick' || state.phase === 'play'); }
+let cpuPlayer = 2;
+function name(n) { return vsCpu ? (n === cpuPlayer ? 'CPU' : 'あなた') : `プレイヤー${n}`; }
+function cpuTurn() { return vsCpu && state.current === cpuPlayer && (state.phase === 'setup-pick' || state.phase === 'play'); }
 
 // CPU の思考（ai.js）は Worker で回す。考え中も画面は固まらない
 let cpuWorker = null;
@@ -247,8 +248,8 @@ function render() {
 function renderStatus() {
   const el = document.getElementById('status');
   if (cpuTurn()) { el.textContent = 'CPU が考えています…'; return; }
-  if (state.phase === 'setup-pick') { el.textContent = 'プレイヤー2: 好きな駒を選んでください'; return; }
-  if (state.phase === 'setup-orient') { el.textContent = 'プレイヤー2: 矢印の向きを選んでください'; return; }
+  if (state.phase === 'setup-pick') { el.textContent = `${name(2)}: 好きな駒を選んでください`; return; }
+  if (state.phase === 'setup-orient') { el.textContent = `${name(2)}: 矢印の向きを選んでください`; return; }
   if (state.phase === 'over') { el.textContent = ''; return; }
   const icon = state.arrow.orientation === 'v' ? '↕' : '↔';
   const label = state.phase === 'place-choice'
@@ -354,7 +355,7 @@ function renderOverlay() {
   overlay.hidden = false;
   const r = state.result;
   document.getElementById('overlay-title').textContent =
-    r.winner === 0 ? '引き分け' : vsCpu ? (r.winner === 1 ? 'あなたの勝ち' : 'CPU の勝ち') : `${name(r.winner)} の勝ち`;
+    r.winner === 0 ? '引き分け' : `${name(r.winner)} の勝ち`;
   document.getElementById('overlay-reason').textContent = r.reason;
 }
 
@@ -376,8 +377,17 @@ function showScreen(name) {
 document.getElementById('home-pieces').innerHTML = COLORS
   .map((c) => `<span class="piece" style="background:${c.hex}">${shapeSVG(c.shape)}</span>`).join('');
 
-document.getElementById('start-cpu').addEventListener('click', () => { vsCpu = true; showScreen('game'); newGame(); });
-document.getElementById('start').addEventListener('click', () => { vsCpu = false; showScreen('game'); newGame(); });
+function start(cpu, player) {
+  vsCpu = cpu;
+  cpuPlayer = player;
+  // 自分の山がいつも下に来るよう、後手のときは上下を入れ替える
+  document.getElementById('stage').classList.toggle('flip', cpu && player === 1);
+  showScreen('game');
+  newGame();
+}
+document.getElementById('start-cpu').addEventListener('click', () => start(true, 2));
+document.getElementById('start-cpu2').addEventListener('click', () => start(true, 1));
+document.getElementById('start').addEventListener('click', () => start(false, 2));
 document.getElementById('resume').addEventListener('click', () => { showScreen('game'); render(); });
 document.getElementById('to-home').addEventListener('click', () => showScreen('home'));
 document.getElementById('over-home').addEventListener('click', () => showScreen('home'));
