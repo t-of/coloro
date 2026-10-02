@@ -85,11 +85,17 @@ function shuffle(arr) {
 /** @type {any} */
 let state;
 
-// CPU 戦: あなたが先手ならプレイヤー1、後手ならプレイヤー2（準備は後手がする）
+// CPU 戦: あなたが先手ならプレイヤー1、後手ならプレイヤー2（準備は後手がする）。cpuPlayer 0 は CPU 同士の観戦
 let vsCpu = false;
 let cpuPlayer = 2;
-function name(n) { return vsCpu ? (n === cpuPlayer ? 'CPU' : 'あなた') : `プレイヤー${n}`; }
-function cpuTurn() { return vsCpu && state.current === cpuPlayer && (state.phase === 'setup-pick' || state.phase === 'play'); }
+function name(n) {
+  if (!vsCpu) return `プレイヤー${n}`;
+  if (cpuPlayer === 0) return `CPU${n}`;
+  return n === cpuPlayer ? 'CPU' : 'あなた';
+}
+function cpuTurn() {
+  return vsCpu && (cpuPlayer === 0 || state.current === cpuPlayer) && (state.phase === 'setup-pick' || state.phase === 'play');
+}
 
 // CPU の思考（ai.js）は Worker で回す。考え中も画面は固まらない
 let cpuWorker = null;
@@ -247,7 +253,7 @@ function render() {
 
 function renderStatus() {
   const el = document.getElementById('status');
-  if (cpuTurn()) { el.textContent = 'CPU が考えています…'; return; }
+  if (cpuTurn()) { el.textContent = `${name(state.current)} が考えています…`; return; }
   if (state.phase === 'setup-pick') { el.textContent = `${name(2)}: 好きな駒を選んでください`; return; }
   if (state.phase === 'setup-orient') { el.textContent = `${name(2)}: 矢印の向きを選んでください`; return; }
   if (state.phase === 'over') { el.textContent = ''; return; }
@@ -388,6 +394,7 @@ function start(cpu, player) {
 document.getElementById('start-cpu').addEventListener('click', () => start(true, 2));
 document.getElementById('start-cpu2').addEventListener('click', () => start(true, 1));
 document.getElementById('start').addEventListener('click', () => start(false, 2));
+document.getElementById('start-watch').addEventListener('click', () => start(true, 0));
 document.getElementById('resume').addEventListener('click', () => { showScreen('game'); render(); });
 document.getElementById('to-home').addEventListener('click', () => showScreen('home'));
 document.getElementById('over-home').addEventListener('click', () => showScreen('home'));
