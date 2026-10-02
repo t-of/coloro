@@ -1,0 +1,179 @@
+:root {
+  --bg: #f2f2f2;
+  --fg: #2a2a2e;
+  --muted: #7a7a82;
+  --accent: #ffd35c;
+  --board-bg: #d8d8db;
+  --cell-bg: #e8e8ea;
+}
+
+* { box-sizing: border-box; }
+
+/* Safari 26 の上下バーの色は html の背景から取られる。body と同じ色にしておく */
+html { background-color: var(--bg); -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: system-ui, -apple-system, 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+button { font: inherit; color: inherit; }
+[hidden] { display: none !important; }
+
+/* 画面の端に置くものはセーフエリアの分だけ内側に。高さは 100vh ではなく 100dvh */
+.app {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding:
+    max(12px, env(safe-area-inset-top))
+    max(12px, env(safe-area-inset-right))
+    max(12px, env(safe-area-inset-bottom))
+    max(12px, env(safe-area-inset-left));
+}
+.bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.bar__title { margin: 0; font-size: 18px; }
+.bar__actions { display: flex; gap: 8px; }
+.pill {
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+  touch-action: manipulation;   /* ダブルタップ拡大を止める */
+  user-select: none;
+  -webkit-user-select: none;
+  max-width: 480px;
+  width: 100%;
+  margin: 0 auto;
+}
+.credit { text-align: center; font-size: 12px; color: var(--muted); }
+.credit a { color: inherit; }
+
+/* ---- status ---- */
+.status {
+  margin: 0;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  min-height: 1.4em;
+}
+.status .arrow-icon { display: inline-block; vertical-align: -2px; margin-right: 4px; }
+
+/* ---- board ---- */
+.board {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+  gap: 3px;
+  aspect-ratio: 1 / 1;
+  background: var(--board-bg);
+  border-radius: 10px;
+  padding: 4px;
+}
+.cell {
+  position: relative;
+  background: var(--cell-bg);
+  border-radius: 5px;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+}
+.cell.pickable, .cell.reachable {
+  cursor: pointer;
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+.cell.pickable::after, .cell.reachable::after {
+  content: '';
+  position: absolute;
+  inset: 22%;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.55;
+}
+.piece { width: 78%; height: 78%; border-radius: 20%; display: grid; place-items: center; }
+.piece svg { width: 62%; height: 62%; }
+.arrow-token { width: 70%; height: 70%; border-radius: 20%; background: #000; display: grid; place-items: center; }
+.arrow-token svg { width: 68%; height: 68%; }
+
+/* ---- player rows (stacks) ---- */
+.row {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  min-height: 56px;
+  padding: 4px 2px;
+  overflow-x: auto;
+}
+.row.current { background: rgba(0, 0, 0, 0.05); border-radius: 8px; }
+.stack {
+  position: relative;
+  width: 40px;
+  height: 48px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+}
+.stack svg { width: 55%; height: 55%; }
+.stack .count {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  background: #000;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  padding: 0 3px;
+}
+.slot {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 48px;
+  border: 2px dashed var(--muted);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 10px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  line-height: 1.2;
+}
+
+/* ---- overlay ---- */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: grid;
+  place-items: center;
+  z-index: 10;
+}
+.overlay__card {
+  background: var(--bg);
+  color: var(--fg);
+  border-radius: 14px;
+  padding: 24px 28px;
+  text-align: center;
+  max-width: 320px;
+}
+.overlay__title { font-size: 20px; font-weight: 700; margin: 0 0 8px; }
+.overlay__reason { font-size: 14px; color: var(--muted); margin: 0 0 16px; }
+
+/* 全画面のオーバーレイは opacity ではなく display: none で隠す */
