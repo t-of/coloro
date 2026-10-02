@@ -177,3 +177,53 @@ button { font: inherit; color: inherit; }
 .overlay__reason { font-size: 14px; color: var(--muted); margin: 0 0 16px; }
 
 /* 全画面のオーバーレイは opacity ではなく display: none で隠す */
+
+/* ---- home ---- */
+.home {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+}
+.home__title { margin: 0; font-size: 44px; letter-spacing: 0.04em; }
+.home__lead { margin: 0; color: var(--muted); font-size: 14px; }
+.home__pieces { display: flex; gap: 6px; }
+.home__pieces .piece { width: 36px; height: 36px; }
+.home__actions { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 8px; }
+.big {
+  min-width: 200px;
+  min-height: 48px;
+  border: none;
+  border-radius: 999px;
+  background: var(--fg);
+  color: var(--bg);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.home__actions .pill { min-height: 44px; min-width: 120px; }
+#to-home { min-height: 36px; }
+.overlay__actions { display: flex; gap: 8px; justify-content: center; }
+.overlay__actions .pill { min-height: 44px; }
+
+/* ---- rules ---- */
+.rules {
+  border: none;
+  border-radius: 14px;
+  background: var(--bg);
+  color: var(--fg);
+  width: min(440px, calc(100% - 32px));
+  max-height: calc(100dvh - 48px);
+  padding: 20px 22px;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.rules::backdrop { background: rgba(0, 0, 0, 0.45); }
+.rules h2 { margin: 0 0 8px; font-size: 20px; }
+.rules h3 { margin: 14px 0 2px; font-size: 15px; }
+.rules p, .rules ul { margin: 0; }
+.rules ul { padding-left: 1.2em; }
+.rules form { margin-top: 18px; text-align: center; }

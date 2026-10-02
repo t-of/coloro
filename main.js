@@ -323,6 +323,29 @@ function renderOverlay() {
   document.getElementById('overlay-reason').textContent = r.reason;
 }
 
+// ---- ホームと遊び方 ----
+
+function showScreen(name) {
+  const inGame = name === 'game';
+  document.getElementById('home').hidden = inGame;
+  document.getElementById('stage').hidden = !inGame;
+  document.getElementById('to-home').hidden = !inGame;
+  document.getElementById('bar-title').hidden = !inGame;
+  if (!inGame) {
+    document.getElementById('overlay').hidden = true;
+    // 途中のゲームがあれば「つづきから」を一番目に出す
+    document.getElementById('resume').hidden = !state || state.phase === 'over';
+  }
+}
+
+document.getElementById('home-pieces').innerHTML = COLORS
+  .map((c) => `<span class="piece" style="background:${c.hex}">${shapeSVG(c.shape)}</span>`).join('');
+
+document.getElementById('start').addEventListener('click', () => { showScreen('game'); newGame(); });
+document.getElementById('resume').addEventListener('click', () => { showScreen('game'); render(); });
+document.getElementById('to-home').addEventListener('click', () => showScreen('home'));
+document.getElementById('over-home').addEventListener('click', () => showScreen('home'));
+document.getElementById('open-rules').addEventListener('click', () => document.getElementById('rules').showModal());
 document.getElementById('again').addEventListener('click', newGame);
 
-newGame();
+showScreen('home');

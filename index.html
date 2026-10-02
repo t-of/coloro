@@ -33,14 +33,26 @@
 <body>
   <main class="app">
     <header class="bar">
-      <h1 class="bar__title">coloro</h1>
+      <button class="pill" id="to-home" hidden>← ホーム</button>
+      <h1 class="bar__title" id="bar-title">coloro</h1>
       <div class="bar__actions">
         <button class="pill" data-wak="install" hidden>アプリにする</button>
         <button class="pill" data-wak="share">共有</button>
       </div>
     </header>
 
-    <section class="stage" id="stage">
+    <section class="home" id="home">
+      <h2 class="home__title">coloro</h2>
+      <p class="home__lead">6色の駒を取り合って、一番高い山を作る2人用ゲーム</p>
+      <div class="home__pieces" id="home-pieces"></div>
+      <div class="home__actions">
+        <button class="big" id="resume" hidden>つづきから</button>
+        <button class="big" id="start">はじめる</button>
+        <button class="pill" id="open-rules">遊び方</button>
+      </div>
+    </section>
+
+    <section class="stage" id="stage" hidden>
       <p class="status" id="status"></p>
       <div class="row" id="row-p2"></div>
       <div class="board" id="board"></div>
@@ -51,9 +63,32 @@
       <div class="overlay__card">
         <p class="overlay__title" id="overlay-title"></p>
         <p class="overlay__reason" id="overlay-reason"></p>
-        <button class="pill" id="again">もう一度</button>
+        <div class="overlay__actions">
+          <button class="pill" id="again">もう一度</button>
+          <button class="pill" id="over-home">ホーム</button>
+        </div>
       </div>
     </div>
+
+    <dialog class="rules" id="rules">
+      <h2>遊び方</h2>
+      <p>1 台の端末を 2 人で交代して遊びます。6 色×6 枚の駒が 6×6 の盤にばらばらに並んでいます。</p>
+      <h3>準備</h3>
+      <p>プレイヤー2 が好きな駒を 1 枚取ります。そのマスに黒い矢印コマが置かれるので、向き（縦 ↕ / 横 ↔）を選びます。そのあとプレイヤー1 から交代で進めます。</p>
+      <h3>手番</h3>
+      <ul>
+        <li>矢印の向きに沿って（縦なら同じ列、横なら同じ行）、光っているマスの駒を 1 枚取ります。途中のマスは飛び越えられます。</li>
+        <li>矢印コマは取ったマスへ動き、向きが 90° 回ります。</li>
+        <li>取った駒は色ごとに自分の山に積みます。新しい色なら、山の列の左端か右端のどちらに置くか選びます。</li>
+      </ul>
+      <h3>おわりと勝ち負け</h3>
+      <ul>
+        <li>矢印の線上に駒がなくなったら終わりです。</li>
+        <li>一番高い山（色は問わない）が高い方の勝ち。</li>
+        <li>同じなら一番左の山の高さ、それも同じなら左から 2 番目…と比べます。山の並べ方も大事です。</li>
+      </ul>
+      <form method="dialog"><button class="big">とじる</button></form>
+    </dialog>
 
     <footer class="credit">
       <a href="/">T.OF...</a> のアプリ ·
