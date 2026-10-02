@@ -85,7 +85,40 @@ function shuffle(arr) {
 /** @type {any} */
 let state;
 
+// CPU 戦ではプレイヤー2 が CPU（準備も CPU がする）
+let vsCpu = false;
+function name(n) { return vsCpu ? (n === 1 ? 'あなた' : 'CPU') : `プレイヤー${n}`; }
+function cpuTurn() { return vsCpu && state.current === 2 && (state.phase === 'setup-pick' || state.phase === 'play'); }
+
+// CPU の思考（ai.js）は Worker で回す。考え中も画面は固まらない
+let cpuWorker = null;
+function askCpu() {
+  if (!cpuTurn() || state.thinking) return;
+  state.thinking = true;
+  const asked = state;
+  cpuWorker = cpuWorker || new Worker('./ai.js');
+  const started = Date.now();
+  cpuWorker.onmessage = (e) => {
+    // 速すぎると何をしたか見えないので、少し間を置く
+    setTimeout(() => {
+      if (state !== asked) return; // その間に新しいゲームになった
+      state.thinking = false;
+      const m = e.data;
+      if (state.phase === 'setup-pick') { onSetupPick(m.r, m.c); onSetupOrient(m.orientation); return; }
+      onMove(m.r, m.c);
+      if (state.phase === 'place-choice') onPlaceChoice(m.side);
+    }, Math.max(0, 600 - (Date.now() - started)));
+  };
+  cpuWorker.postMessage({
+    board: state.board, arrow: state.arrow, current: state.current,
+    stacks: { 1: state.players[1].stacks, 2: state.players[2].stacks },
+    setup: state.phase === 'setup-pick', timeMs: 2000,
+  });
+}
+
 function newGame() {
+  // 前のゲームの考え中の手が新しいゲームに届かないよう、Worker ごと止める
+  if (cpuWorker) { cpuWorker.terminate(); cpuWorker = null; }
   const pool = shuffle(COLORS.flatMap((_, ci) => Array(6).fill(ci)));
   const board = Array.from({ length: SIZE }, (_, r) => pool.slice(r * SIZE, r * SIZE + SIZE));
   state = {
@@ -143,7 +176,7 @@ function judge() {
   const m1 = maxStack(s1), m2 = maxStack(s2);
   if (m1 !== m2) {
     const winner = m1 > m2 ? 1 : 2;
-    return { winner, reason: `一番高い山: プレイヤー1 ${m1} 段 / プレイヤー2 ${m2} 段` };
+    return { winner, reason: `一番高い山: ${name(1)} ${m1} 段 / ${name(2)} ${m2} 段` };
   }
   const len = Math.max(s1.length, s2.length);
   for (let i = 0; i < len; i++) {
@@ -151,7 +184,7 @@ function judge() {
     const h2 = s2[i] ? s2[i].count : 0;
     if (h1 !== h2) {
       const winner = h1 > h2 ? 1 : 2;
-      return { winner, reason: `左から ${i + 1} 番目の山: プレイヤー1 ${h1} 段 / プレイヤー2 ${h2} 段` };
+      return { winner, reason: `左から ${i + 1} 番目の山: ${name(1)} ${h1} 段 / ${name(2)} ${h2} 段` };
     }
   }
   return { winner: 0, reason: '山の高さがすべて同じ' };
@@ -203,6 +236,7 @@ function onPlaceChoice(side) {
 // ---- 描画 ----
 
 function render() {
+  if (cpuTurn()) askCpu();
   renderStatus();
   renderBoard();
   renderRow(1);
@@ -212,13 +246,14 @@ function render() {
 
 function renderStatus() {
   const el = document.getElementById('status');
+  if (cpuTurn()) { el.textContent = 'CPU が考えています…'; return; }
   if (state.phase === 'setup-pick') { el.textContent = 'プレイヤー2: 好きな駒を選んでください'; return; }
   if (state.phase === 'setup-orient') { el.textContent = 'プレイヤー2: 矢印の向きを選んでください'; return; }
   if (state.phase === 'over') { el.textContent = ''; return; }
   const icon = state.arrow.orientation === 'v' ? '↕' : '↔';
   const label = state.phase === 'place-choice'
-    ? `プレイヤー${state.pending.player}: 新しい色の山をどちらに置く？`
-    : `プレイヤー${state.current} の番`;
+    ? `${name(state.pending.player)}: 新しい色の山をどちらに置く？`
+    : `${name(state.current)} の番`;
   el.innerHTML = '';
   const span = document.createElement('span');
   span.className = 'arrow-icon';
@@ -230,7 +265,7 @@ function renderStatus() {
 function renderBoard() {
   const board = document.getElementById('board');
   board.innerHTML = '';
-  const reach = state.phase === 'play' && state.arrow
+  const reach = state.phase === 'play' && state.arrow && !cpuTurn()
     ? reachableCells(state.board, state.arrow.r, state.arrow.c, state.arrow.orientation)
     : [];
   for (let r = 0; r < SIZE; r++) {
@@ -255,7 +290,7 @@ function renderBoard() {
         piece.innerHTML = shapeSVG(COLORS[color].shape);
         cell.appendChild(piece);
       }
-      if (state.phase === 'setup-pick' && color != null) {
+      if (state.phase === 'setup-pick' && color != null && !cpuTurn()) {
         cell.classList.add('pickable');
         cell.addEventListener('click', () => onSetupPick(r, c));
       }
@@ -319,7 +354,7 @@ function renderOverlay() {
   overlay.hidden = false;
   const r = state.result;
   document.getElementById('overlay-title').textContent =
-    r.winner === 0 ? '引き分け' : `プレイヤー${r.winner} の勝ち`;
+    r.winner === 0 ? '引き分け' : vsCpu ? (r.winner === 1 ? 'あなたの勝ち' : 'CPU の勝ち') : `${name(r.winner)} の勝ち`;
   document.getElementById('overlay-reason').textContent = r.reason;
 }
 
@@ -341,7 +376,8 @@ function showScreen(name) {
 document.getElementById('home-pieces').innerHTML = COLORS
   .map((c) => `<span class="piece" style="background:${c.hex}">${shapeSVG(c.shape)}</span>`).join('');
 
-document.getElementById('start').addEventListener('click', () => { showScreen('game'); newGame(); });
+document.getElementById('start-cpu').addEventListener('click', () => { vsCpu = true; showScreen('game'); newGame(); });
+document.getElementById('start').addEventListener('click', () => { vsCpu = false; showScreen('game'); newGame(); });
 document.getElementById('resume').addEventListener('click', () => { showScreen('game'); render(); });
 document.getElementById('to-home').addEventListener('click', () => showScreen('home'));
 document.getElementById('over-home').addEventListener('click', () => showScreen('home'));
