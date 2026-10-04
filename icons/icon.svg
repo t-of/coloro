@@ -1,1 +1,24 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#f2f2f2"/><text x="256" y="256" dy=".35em" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="700" font-size="280" fill="#eceef3">C</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#f2f2f2"/>
+
+  <!-- 色の山（高さの違う4色のスタック） -->
+  <g stroke="#2a2a2e" stroke-width="3">
+    <rect x="87"  y="382" width="66" height="58" rx="10" fill="#e5484d"/>
+    <rect x="87"  y="318" width="66" height="58" rx="10" fill="#e5484d"/>
+
+    <rect x="173" y="382" width="66" height="58" rx="10" fill="#3b82f6"/>
+    <rect x="173" y="318" width="66" height="58" rx="10" fill="#3b82f6"/>
+    <rect x="173" y="254" width="66" height="58" rx="10" fill="#3b82f6"/>
+    <rect x="173" y="190" width="66" height="58" rx="10" fill="#3b82f6"/>
+
+    <rect x="259" y="382" width="66" height="58" rx="10" fill="#f2c94c"/>
+
+    <rect x="345" y="382" width="66" height="58" rx="10" fill="#27ae60"/>
+    <rect x="345" y="318" width="66" height="58" rx="10" fill="#27ae60"/>
+    <rect x="345" y="254" width="66" height="58" rx="10" fill="#27ae60"/>
+  </g>
+
+  <!-- 矢印コマ（縦横に動く4方向の駒） -->
+  <polygon points="256,40 271.6,84.4 316,100 271.6,115.6 256,160 240.4,115.6 196,100 240.4,84.4"
+    fill="#ffd35c" stroke="#2a2a2e" stroke-width="8" stroke-linejoin="round"/>
+</svg>
